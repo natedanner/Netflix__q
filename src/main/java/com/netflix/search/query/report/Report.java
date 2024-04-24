@@ -45,7 +45,7 @@ public abstract class Report {
     private List<ReportItem> items = Lists.newArrayList();
 
     private Date date;
-    private DateUtil dateUtil = new DateUtil();
+    private final DateUtil dateUtil = new DateUtil();
 
     public Report() {
 		this.date = dateUtil.getDateFromCurrentTime();
@@ -53,8 +53,9 @@ public abstract class Report {
 
     public void setDate(String dateString)
     {
-		if (dateString != null)
-			this.date = dateUtil.getDateFromString(dateString);
+        if (dateString != null) {
+            this.date = dateUtil.getDateFromString(dateString);
+        }
     }
 
     public String reportNameForUpload()
@@ -106,8 +107,9 @@ public abstract class Report {
 			for (ReportItem key : previous.getItems())
 			{
 				ReportItem diffForReportItem = getDiffForReportItem(key, currentMap.get(key));
-				if (diffForReportItem != null)
-					returnValueItems.add(diffForReportItem);
+                if (diffForReportItem != null) {
+                    returnValueItems.add(diffForReportItem);
+                }
 			}
 
 			for (ReportItem key : this.getItems())

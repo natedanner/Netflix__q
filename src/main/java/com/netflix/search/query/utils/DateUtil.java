@@ -28,11 +28,11 @@ import com.netflix.search.query.Properties;
 public class DateUtil {
     public static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
-    private final DateFormat DATE_FORMAT = new SimpleDateFormat(Properties.dateFormat.get(), Locale.ENGLISH);
+    private final DateFormat dateFormat = new SimpleDateFormat(Properties.dateFormat.get(), Locale.ENGLISH);
 
     public String getStringFromDate(Date date)
     {
-        return DATE_FORMAT.format(date);
+        return dateFormat.format(date);
     }
 
     public Date getDateFromCurrentTime()
@@ -43,7 +43,7 @@ public class DateUtil {
     public Date getDateFromString(String dateString)
     {
         try {
-            return DATE_FORMAT.parse(dateString);
+            return dateFormat.parse(dateString);
         } catch (Throwable e) {
             logger.error("Error trying to create Date from String", e);
         }

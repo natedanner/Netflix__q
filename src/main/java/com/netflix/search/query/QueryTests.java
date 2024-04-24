@@ -45,13 +45,13 @@ import com.netflix.search.query.report.summary.SummaryReport;
 public class QueryTests {
     public static final Logger logger = LoggerFactory.getLogger(QueryTests.class);
 
-    private BaseIndexer indexer = null;
-    private BaseSearcher searcher = null;
+    private BaseIndexer indexer;
+    private BaseSearcher searcher;
     private Map<String, Map<String, Set<String>>> queries = Maps.newLinkedHashMap();
     private GoogleDataExtractor googleDataExtractor;
     private DetailReport detailReport;
     private SummaryReport summaryReport;
-    private TitleIdUtils titleIdUtils;
+    private final TitleIdUtils titleIdUtils;
 
     public BaseIndexer getIndexer() {
         return indexer;
@@ -91,8 +91,9 @@ public class QueryTests {
     }
 
     public DetailReport getDetailReport() {
-        if (detailReport == null)
+        if (detailReport == null) {
             detailReport = new DetailReport();
+        }
         return detailReport;
     }
 
@@ -101,8 +102,9 @@ public class QueryTests {
     }
 
     public SummaryReport getSummaryReport() {
-        if (summaryReport == null)
+        if (summaryReport == null) {
             summaryReport = new SummaryReport();
+        }
         return summaryReport;
     }
 
@@ -162,12 +164,14 @@ public class QueryTests {
         nextTest:
         for (String testName : queries.keySet()) {
             long start = System.currentTimeMillis();
-            if (queries.get(testName) == null || queries.get(testName).size() == 0)
+            if (queries.get(testName) == null || queries.get(testName).size() == 0) {
                 continue nextTest;
+            }
             List<String> languages = StringUtils.getLanguageForTest(testName);
             indexer = getIndexer(testName);
-            if (indexer == null)
+            if (indexer == null) {
                 continue nextTest;
+            }
             searcher = getSearcher();
             logger.info("Processing: " + testName);
             indexer.indexData(languages);
@@ -178,10 +182,12 @@ public class QueryTests {
     }
 
     private BaseSearcher getSearcher() {
-        if (Properties.engineType.get().equalsIgnoreCase("solr"))
+        if ("solr".equalsIgnoreCase(Properties.engineType.get())) {
             return new SolrSearcher();
-        else if (Properties.engineType.get().equalsIgnoreCase("es"))
+        }
+        else if ("es".equalsIgnoreCase(Properties.engineType.get())) {
             return new ElasticsearchSearcher();
+        }
         else {
             logger.error("No support for the engine type: " + Properties.engineType.get());
             return null;
@@ -215,8 +221,9 @@ public class QueryTests {
 
         for (String q : queryToIds.keySet()) {
             Set<String> relevantDocuments = queryToIds.get(q);
-            if (relevantDocuments != null)
+            if (relevantDocuments != null) {
                 titlesTested.addAll(relevantDocuments);
+            }
 
             Set<String> results = searcher.getResults(q, languages, StringUtils.getDatasetId(testName));
 
@@ -230,15 +237,18 @@ public class QueryTests {
     private static BaseIndexer getIndexer(String testId) {
         String datasetId = StringUtils.getDatasetId(testId);
         String inputFileName = Properties.dataDir.get() + datasetId + ".tsv";
-        if (new File(inputFileName).exists())
-            if (Properties.engineType.get().equalsIgnoreCase("solr"))
+        if (new File(inputFileName).exists()) {
+            if ("solr".equalsIgnoreCase(Properties.engineType.get())) {
                 return new SolrIndexer(inputFileName, datasetId);
-            else if (Properties.engineType.get().equalsIgnoreCase("es"))
+            }
+            else if ("es".equalsIgnoreCase(Properties.engineType.get())) {
                 return new ElasticsearchIndexer(inputFileName, datasetId);
+            }
             else {
                 logger.error("No support for the engine type: " + Properties.engineType.get());
                 return null;
             }
+        }
         else {
             logger.error("Data doesn't exist: " + inputFileName + " skipping the test " + testId);
             return null;

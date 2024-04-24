@@ -49,9 +49,9 @@ public class TitleWithQueries {
     private String titleAlt;
     private final String language;
     private final String entityType;
-    private String sheetId;
+    private final String sheetId;
 
-    private Map<String, Set<String>> queriesByCategory = Maps.newLinkedHashMap();
+    private final Map<String, Set<String>> queriesByCategory = Maps.newLinkedHashMap();
 
     public TitleWithQueries(String sheetId) {
         String[] id = sheetId.split(SHEET_NAME_DELIMITER);
@@ -102,23 +102,28 @@ public class TitleWithQueries {
             return;
         }
         if (value != null && !value.isEmpty()) {
-            if (headerValue.equalsIgnoreCase(ID))
+            if (headerValue.equalsIgnoreCase(ID)) {
                 this.id = value;
+            }
 
-            else if (headerValue.equalsIgnoreCase(TITLE_EN))
+            else if (headerValue.equalsIgnoreCase(TITLE_EN)) {
                 this.titleEn = value;
+            }
 
-            else if (headerValue.equalsIgnoreCase(TITLE_LOCALE))
+            else if (headerValue.equalsIgnoreCase(TITLE_LOCALE)) {
                 this.titleLocale = value;
+            }
 
-            else if (headerValue.equalsIgnoreCase(TITLE_ALT))
+            else if (headerValue.equalsIgnoreCase(TITLE_ALT)) {
                 this.titleAlt = value;
+            }
 
             else if (headerValue.startsWith(Q_)) {
                 String cleanedHeader = headerValue.substring(2);
                 Set<String> queriesForThisCategory = queriesByCategory.get(cleanedHeader);
-                if (queriesForThisCategory == null)
+                if (queriesForThisCategory == null) {
                     queriesForThisCategory = Sets.newLinkedHashSet();
+                }
                 queriesForThisCategory.add(value);
                 queriesByCategory.put(cleanedHeader, queriesForThisCategory);
             }

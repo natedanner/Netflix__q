@@ -35,11 +35,11 @@ public class GoogleDataExtractor {
     public static final Logger logger = LoggerFactory.getLogger(GoogleDataExtractor.class);
 
     private static final String ENCODING = "UTF-8";
-    private Map<String, Map<Integer, TitleWithQueries>> titlesWithQueriesPerDataset = Maps.newLinkedHashMap();
+    private final Map<String, Map<Integer, TitleWithQueries>> titlesWithQueriesPerDataset = Maps.newLinkedHashMap();
     private Report previousDetailReport = new DetailReport();
     private Report previousSummaryReport = new SummaryReport();
 
-    private GoogleSheetsService searchGoogleSheetsService = null;
+    private GoogleSheetsService searchGoogleSheetsService;
 
     public GoogleDataExtractor() {
         super();
@@ -75,7 +75,7 @@ public class GoogleDataExtractor {
         for (String sheetId : Properties.validDataSetsId.get()) {
             logger.info("Initializing and Downloading: " + sheetId);
             List<List<Object>> spreadsheetData = searchGoogleSheetsService.getSpreadsheetDataForQueries(sheetId);
-            if (spreadsheetData != null && spreadsheetData.size() != 0) {
+            if (spreadsheetData != null && !spreadsheetData.isEmpty()) {
                 Map<Integer, TitleWithQueries> titlesWithQueries = searchGoogleSheetsService.getTitlesWithQueries(spreadsheetData, sheetId);
                 titlesWithQueriesPerDataset.put(sheetId, titlesWithQueries);
                 List<String> titlesWithQueriesAsTsv = searchGoogleSheetsService.extractWorksheetData(spreadsheetData, null);
@@ -83,7 +83,9 @@ public class GoogleDataExtractor {
             } else {
                 logger.info("Sheet doesn't exist or it is empty: " + sheetId);
             }
-            if (Properties.googleApiThrottlePause.get() > 0) Thread.sleep(Properties.googleApiThrottlePause.get());
+            if (Properties.googleApiThrottlePause.get() > 0) {
+                Thread.sleep(Properties.googleApiThrottlePause.get());
+            }
         }
     }
 

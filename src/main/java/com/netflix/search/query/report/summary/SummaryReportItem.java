@@ -29,8 +29,9 @@ public class SummaryReportItem extends ReportItem {
         setValue(SummaryReportHeader.queries.toString(), String.valueOf(queries));
         for (ResultType type : ResultType.values()) {
             Integer counter = counters.get(type);
-            if (counter == null)
+            if (counter == null) {
                 counter = 0;
+            }
             setValue(type.toString(), String.valueOf(counter));
         }
         setValue(SummaryReportHeader.precision.toString(), (String.format("%.2f", (precision * 100)) + SummaryReport.PERCENT_SIGN));
@@ -50,8 +51,9 @@ public class SummaryReportItem extends ReportItem {
     @Override
     protected void appendKeyFromNamedValues(String headerValue, String value)
     {
-        if (headerValue.equals(SummaryReportHeader.name.toString()))
+        if (headerValue.equals(SummaryReportHeader.name.toString())) {
             setKey(value);
+        }
     }
 
     @Override
@@ -63,18 +65,23 @@ public class SummaryReportItem extends ReportItem {
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         SummaryReportItem other = (SummaryReportItem) obj;
         if (getKey() == null) {
-            if (other.getKey() != null)
+            if (other.getKey() != null) {
                 return false;
-        } else if (!getKey().equals(other.getKey()))
+            }
+        } else if (!getKey().equals(other.getKey())) {
             return false;
+        }
         return true;
     }
 

@@ -41,7 +41,9 @@ public class HeaderUtils {
 				returnValue[i] = values[i].toString();
 			}
 			return returnValue;
-		} else
-			return null;
+		}
+        else {
+            return null;
+        }
 	}
 }

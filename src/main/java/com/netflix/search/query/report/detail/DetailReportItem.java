@@ -43,10 +43,12 @@ public class DetailReportItem extends ReportItem {
     @Override
 	protected void appendKeyFromNamedValues(String headerValue, String value)
     {
-        if (headerValue.equals(DetailReportHeader.name.toString()))
-        	setKey(value);
-        else if (headerValue.equals(DetailReportHeader.failure.toString()) || headerValue.equals(DetailReportHeader.query.toString()))
-        	setKey(getKey() + "_" + value);
+        if (headerValue.equals(DetailReportHeader.name.toString())) {
+            setKey(value);
+        }
+        else if (headerValue.equals(DetailReportHeader.failure.toString()) || headerValue.equals(DetailReportHeader.query.toString())) {
+            setKey(getKey() + "_" + value);
+        }
     }
 
     @Override
@@ -64,18 +66,23 @@ public class DetailReportItem extends ReportItem {
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         DetailReportItem other = (DetailReportItem) obj;
         if (getKey() == null) {
-            if (other.getKey() != null)
+            if (other.getKey() != null) {
                 return false;
-        } else if (!getKey().equals(other.getKey()))
+            }
+        } else if (!getKey().equals(other.getKey())) {
             return false;
+        }
         return true;
     }
 

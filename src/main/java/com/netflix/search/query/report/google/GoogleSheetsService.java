@@ -71,10 +71,10 @@ public class GoogleSheetsService {
     private String detailReportName = "";
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static Sheets spreadsheetService = null;
+    private static Sheets spreadsheetService;
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
 
-    private DateUtil dateUtil = new DateUtil();
+    private final DateUtil dateUtil = new DateUtil();
 
     public GoogleSheetsService() {
         super();
@@ -95,8 +95,8 @@ public class GoogleSheetsService {
     }
 
     private void initSpreadsheetService() throws Throwable {
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        spreadsheetService = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).setApplicationName(Properties.googleAppName.get()).build();
+        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        spreadsheetService = new Sheets.Builder(httpTransport, JSON_FACTORY, getCredentials(httpTransport)).setApplicationName(Properties.googleAppName.get()).build();
 
     }
 
@@ -149,14 +149,18 @@ public class GoogleSheetsService {
 
     public Report extractReport(boolean isDetailReport) throws Throwable {
         Report report = null;
-        if (isDetailReport) report = new DetailReport();
-        else report = new SummaryReport();
+        if (isDetailReport) {
+            report = new DetailReport();
+        }
+        else {
+            report = new SummaryReport();
+        }
         List<ReportItem> reportItems = null;
         String spreadsheetName = getReportName(isDetailReport);
         Spreadsheet spreadsheet = getSpreadsheet(spreadsheetName);
         String worksheetId = getLatestWorksheetId(spreadsheet);
         List<List<Object>> spreadsheetData = getSpreadsheetData(spreadsheet, spreadsheetName, worksheetId);
-        if (spreadsheetData != null && spreadsheetData.size() > 0) {
+        if (spreadsheetData != null && !spreadsheetData.isEmpty()) {
             reportItems = getReport(spreadsheetData, isDetailReport);
         }
         report.setItems(reportItems);
@@ -170,8 +174,9 @@ public class GoogleSheetsService {
         Date reportCurrentDate = new Date(Long.MIN_VALUE);
         for (Sheet sheet : spreadsheet.getSheets()) {
             String title = sheet.getProperties().getTitle();
-            if (title.equals("instructions") || title.equals("Sheet1") || title.startsWith("diff_") || title.startsWith("ignore_"))
+            if ("instructions".equals(title) || "Sheet1".equals(title) || title.startsWith("diff_") || title.startsWith("ignore_")) {
                 continue;
+            }
             Date date = dateUtil.getDateFromString(title);
             if (date.after(reportCurrentDate)) {
                 reportCurrentDate = date;
@@ -185,7 +190,7 @@ public class GoogleSheetsService {
         List<String> returnValue = Lists.newArrayList();
         int startingIndex = headerDefault == null ? 0 : 1;
         int headerSize = 0;
-        if (values != null && values.size() > 0) {
+        if (values != null && !values.isEmpty()) {
             if (headerDefault != null) {
                 returnValue.add(Arrays.asList(headerDefault).stream().collect(Collectors.joining(Properties.inputDelimiter.get())));
                 headerSize = headerDefault.length;
@@ -195,8 +200,11 @@ public class GoogleSheetsService {
             for (List<Object> row : values.subList(startingIndex, values.size())) {
                 int diffInRowSize = headerSize - row.size();
                 StringBuilder trailingEmptyCells = new StringBuilder();
-                if (diffInRowSize > 0)
-                    for (int i = 0; i < diffInRowSize; i++) trailingEmptyCells.append(Properties.inputDelimiter.get());
+                if (diffInRowSize > 0) {
+                    for (int i = 0; i < diffInRowSize; i++) {
+                        trailingEmptyCells.append(Properties.inputDelimiter.get());
+                    }
+                }
                 String rowAsString = row.stream()
                         .map(object -> Objects.toString(object))
                         .collect(Collectors.joining(Properties.inputDelimiter.get()));
@@ -208,7 +216,7 @@ public class GoogleSheetsService {
 
     protected List<String> extractWorksheetData(Report report, String[] headerDefault) {
         List<String> returnValue = Lists.newArrayList();
-        if (report != null && report.getItems().size() > 0) {
+        if (report != null && !report.getItems().isEmpty()) {
             returnValue.add(Arrays.asList(headerDefault).stream().collect(Collectors.joining(Properties.inputDelimiter.get())));
             for (ReportItem reportItem : report.getItems()) {
                 returnValue.add(reportItem.toString());
@@ -218,15 +226,16 @@ public class GoogleSheetsService {
     }
 
     private String getReportName(boolean isDetailReport) {
-        if (isDetailReport)
+        if (isDetailReport) {
             return detailReportName;
-        else
+        }
+        else {
             return summaryReportName;
+        }
     }
 
     private Spreadsheet getSpreadsheet(String reportSpreadsheetName) throws Throwable {
-        Spreadsheet spreadsheet = spreadsheetService.spreadsheets().get(reportSpreadsheetName).execute();
-        return spreadsheet;
+        return spreadsheetService.spreadsheets().get(reportSpreadsheetName).execute();
     }
 
     public void updateReport(String worksheetId, String[] reportHeader, List<ReportItem> reportItems, boolean isDetailReport) throws Throwable {
@@ -258,26 +267,27 @@ public class GoogleSheetsService {
             cellData = new ArrayList<>();
             int columnCount = 0;
             for (Map.Entry<String, String> cell : row.getNamedValues().entrySet()) {
-                if (isDetailReport || (!isDetailReport && (cell.getKey().equals("name") || cell.getKey().equals("precision") || cell.getKey().equals("recall") || cell.getKey().equals("fmeasure") || cell.getKey().equals("comments"))))
+                if (isDetailReport || (!isDetailReport && ("name".equals(cell.getKey()) || "precision".equals(cell.getKey()) || "recall".equals(cell.getKey()) || "fmeasure".equals(cell.getKey()) || "comments".equals(cell.getKey())))) {
                     cellData.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(cell.getValue())));
-                else
+                }
+                else {
                     cellData.add(new CellData().setUserEnteredValue(new ExtendedValue().setNumberValue(Double.valueOf(cell.getValue()))));
+                }
                 columnCount++;
             }
             rowData.add(new RowData().setValues(cellData));
         }
 
-        Request request = new Request()
+        return new Request()
                 .setUpdateCells(new UpdateCellsRequest()
                         .setStart(grid)
                         .setRows(rowData)
                         .setFields("userEnteredValue"));
-        return request;
     }
 
     public void importData(Spreadsheet spreadsheet, Sheet sheet, List<ReportItem> reportItems, String[] reportHeader, boolean isDetailReport) throws IOException {
         Integer sheetId = sheet.getProperties().getSheetId();
-        List<Request> requests = new ArrayList<Request>();
+        List<Request> requests = new ArrayList<>();
         if (reportItems.size() > 1000) {
             requests.add(appendEmptyRows(sheetId, reportItems.size() - 1000));
         }
@@ -301,8 +311,9 @@ public class GoogleSheetsService {
 
     private Sheet getWorksheet(Spreadsheet spreadsheet, String worksheetId) {
         for (Sheet sheet : spreadsheet.getSheets()) {
-            if (sheet.getProperties().getTitle().equals(worksheetId))
+            if (sheet.getProperties().getTitle().equals(worksheetId)) {
                 return sheet;
+            }
         }
         logger.error("Sheet {} NOT found.", worksheetId);
         return null;
@@ -312,8 +323,9 @@ public class GoogleSheetsService {
         Map<Integer, TitleWithQueries> returnValue = Maps.newLinkedHashMap();
         for (int rowIndex = 1; rowIndex < values.size(); rowIndex++) {
             TitleWithQueries titleWithQueries = returnValue.get(rowIndex);
-            if (titleWithQueries == null)
+            if (titleWithQueries == null) {
                 titleWithQueries = new TitleWithQueries(worksheetId);
+            }
             int columnIndex = 0;
             for (Object cell : values.get(rowIndex)) {
                 if (cell != null) {
@@ -336,8 +348,12 @@ public class GoogleSheetsService {
         for (int rowIndex = 1; rowIndex < values.size(); rowIndex++) {
             int columnIndex = 0;
 
-            if (isDetailReport) reportRowItem = new DetailReportItem();
-            else reportRowItem = new SummaryReportItem();
+            if (isDetailReport) {
+                reportRowItem = new DetailReportItem();
+            }
+            else {
+                reportRowItem = new SummaryReportItem();
+            }
 
             for (Object cell : values.get(rowIndex)) {
                 if (cell != null) {
@@ -348,13 +364,16 @@ public class GoogleSheetsService {
                 columnIndex++;
             }
             if (isDetailReport) {
-                if (!reportRowItem.getNamedValues().containsKey(DetailReportHeader.expected.toString()))
+                if (!reportRowItem.getNamedValues().containsKey(DetailReportHeader.expected.toString())) {
                     reportRowItem.setValue(DetailReportHeader.expected.toString(), "");
-                if (!reportRowItem.getNamedValues().containsKey(DetailReportHeader.actual.toString()))
+                }
+                if (!reportRowItem.getNamedValues().containsKey(DetailReportHeader.actual.toString())) {
                     reportRowItem.setValue(DetailReportHeader.actual.toString(), "");
+                }
             }
-            if (reportRowItem != null)
+            if (reportRowItem != null) {
                 returnValue.add(reportRowItem);
+            }
         }
         return returnValue;
     }
@@ -362,18 +381,15 @@ public class GoogleSheetsService {
     private BatchUpdateSpreadsheetResponse postRequest(Spreadsheet spreadsheet, Request request) throws IOException {
         List<Request> requests = Arrays.asList(request);
         BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest().setRequests(requests).setIncludeSpreadsheetInResponse(true);
-        BatchUpdateSpreadsheetResponse response = spreadsheetService.spreadsheets().batchUpdate(spreadsheet.getSpreadsheetId(), body).execute();
-        return response;
+        return spreadsheetService.spreadsheets().batchUpdate(spreadsheet.getSpreadsheetId(), body).execute();
     }
 
     private BatchUpdateSpreadsheetResponse postRequests(Spreadsheet spreadsheet, List<Request> requests) throws IOException {
         BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest().setRequests(requests).setIncludeSpreadsheetInResponse(true);
-        BatchUpdateSpreadsheetResponse response = spreadsheetService.spreadsheets().batchUpdate(spreadsheet.getSpreadsheetId(), body).execute();
-        return response;
+        return spreadsheetService.spreadsheets().batchUpdate(spreadsheet.getSpreadsheetId(), body).execute();
     }
 
     private Request appendEmptyRows(Integer sheetId, Integer length) {
-        Request request = new Request().setAppendDimension(new AppendDimensionRequest().setSheetId(sheetId).setDimension("ROWS").setLength(length));
-        return request;
+        return new Request().setAppendDimension(new AppendDimensionRequest().setSheetId(sheetId).setDimension("ROWS").setLength(length));
     }
 }

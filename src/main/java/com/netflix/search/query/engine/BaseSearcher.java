@@ -32,7 +32,7 @@ public abstract class BaseSearcher {
 
     public static final Logger logger = LoggerFactory.getLogger(BaseSearcher.class);
 
-	private Client client = Client.create();
+    private final Client client = Client.create();
 
 	public BaseSearcher() {
 	}
@@ -41,29 +41,33 @@ public abstract class BaseSearcher {
 	{
 		String urlForGettingDoc = getUrlForGettingDoc(q, languages, dataSetId);
 
-		if (Properties.isPrintUrl.get())
-			logger.info(urlForGettingDoc);
+        if (Properties.isPrintUrl.get()) {
+            logger.info(urlForGettingDoc);
+        }
 
 		String jsonString = getJsonForQuery(q, languages, dataSetId);
 
 		WebResource webResource = client.resource(urlForGettingDoc);
 		ClientResponse response = null;
 
-		if (jsonString != null)
-			response = webResource.type("application/json").post(ClientResponse.class, jsonString);
-		else
-			response = webResource.get(ClientResponse.class);
-		if (response == null || (response.getStatus() != 201 && response.getStatus() != 200))
-			throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
+        if (jsonString != null) {
+            response = webResource.type("application/json").post(ClientResponse.class, jsonString);
+        }
+        else {
+            response = webResource.get(ClientResponse.class);
+        }
+        if (response == null || (response.getStatus() != 201 && response.getStatus() != 200)) {
+            throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
+        }
 		String output = response.getEntity(String.class);
-		Set<String> results = getResultsFromServerResponse(output);
-		return results;
+		return getResultsFromServerResponse(output);
 	}
 
 	public static String getPhraseQueryString(String q)
 	{
-		if (q == null)
-			return null;
+        if (q == null) {
+            return null;
+        }
 		return "\"" + q.replaceAll("[\"|\\\\]", "") + "\"";
 	}
 

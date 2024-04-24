@@ -65,12 +65,12 @@ public class DetailReport extends Report {
     {
         if (!results.equals(queryToIds.get(q))) {
             String expectedTitles = getTitles(queryToIds.get(q), titleIdToName);
-            if (results.size() > 0) {
+            if (!results.isEmpty()) {
                 Set<String> intersection = Sets.intersection(queryToIds.get(q), results);
-                Set<String> uniqExpected = new HashSet<String>(queryToIds.get(q));
+                Set<String> uniqExpected = new HashSet<>(queryToIds.get(q));
                 uniqExpected.removeAll(intersection);
                 expectedTitles = getTitles(uniqExpected, titleIdToName);
-                Set<String> uniqActual = new HashSet<String>(results);
+                Set<String> uniqActual = new HashSet<>(results);
                 uniqActual.removeAll(intersection);
                 String actualTitles = getTitles(uniqActual, titleIdToName);
                 if (results.containsAll(queryToIds.get(q))) {
@@ -84,15 +84,18 @@ public class DetailReport extends Report {
             	getItems().add(new DetailReportItem(testName, ResultType.noResultsFailed, q, expectedTitles, NONE));
                 updateCounter(counters, ResultType.noResultsFailed);
             }
-        } else
+        }
+        else {
             updateCounter(counters, ResultType.successQ);
+        }
     }
 
     private void updateCounter(Map<ResultType, Integer> counters, ResultType type)
     {
         Integer failureCounter = counters.get(type);
-        if (failureCounter == null)
+        if (failureCounter == null) {
             failureCounter = 0;
+        }
         counters.put(type, ++failureCounter);
     }
 
@@ -101,7 +104,7 @@ public class DetailReport extends Report {
 		Joiner joiner = Joiner.on(SEPARATOR);
 		if (ids != null && titleIdToName != null && titleIdToName.keySet() != null) {
 			Set<String> intersection = Sets.intersection(ids, titleIdToName.keySet());
-			Map<String, String> copy = new LinkedHashMap<String, String>(titleIdToName);
+			Map<String, String> copy = new LinkedHashMap<>(titleIdToName);
 			copy.keySet().retainAll(intersection);
 			returnValue = joiner.join(copy.values());
 		}

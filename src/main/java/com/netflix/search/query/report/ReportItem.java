@@ -23,7 +23,7 @@ import com.netflix.search.query.Properties;
 
 public abstract class ReportItem {
     private Map<String, String>  namedValues= Maps.newLinkedHashMap();
-    private String key = null;
+    private String key;
 
     public Map<String, String> getNamedValues()
     {
@@ -73,7 +73,7 @@ public abstract class ReportItem {
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((key == null) ? 0 : key.hashCode());
+        result = prime * result + (key == null ? 0 : key.hashCode());
         return result;
     }
 

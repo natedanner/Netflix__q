@@ -45,10 +45,10 @@ public abstract class BaseIndexer {
 
     public static final String ENCODING = "UTF-8";
     private static final int BUFFER_SIZE = 1 << 16; // 64K
-    private Client client = Client.create();
+    private final Client client = Client.create();
 
-    private String inputFileName=null;
-    private String testName=null;
+    private final String inputFileName;
+    private final String testName;
 
     public BaseIndexer(String inputFileName, String testName) {
         this.inputFileName = inputFileName;
@@ -66,19 +66,22 @@ public abstract class BaseIndexer {
 
     protected List<Map<String, Object>> createDocs(List<String> languages) throws Throwable
     {
-        List<Map<String, Object>> docs = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> docs = new ArrayList<>();
 
         InputStream is = new BufferedInputStream(new FileInputStream(inputFileName), BUFFER_SIZE);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, ENCODING), BUFFER_SIZE);
         String lineString = null;
         while ((lineString = reader.readLine()) != null) {
             String[] line = lineString.split(Properties.inputDelimiter.get());
-			if (lineString.startsWith(Properties.idField.get() + Properties.inputDelimiter.get()))
-				continue;
-            if (line.length < 3)
+            if (lineString.startsWith(Properties.idField.get() + Properties.inputDelimiter.get())) {
+                continue;
+            }
+            if (line.length < 3) {
                 logger.error("Bad data: " + lineString);
-            else
+            }
+            else {
                 docs.add(createDoc(line[0], line[1], line[2], line[3], languages));
+            }
         }
         reader.close();
         is.close();
@@ -87,7 +90,7 @@ public abstract class BaseIndexer {
 
     public Map<String, Object> createDoc(String id, String english, String local, String altTitle, List<String> languages)
     {
-        Map<String, Object> doc = new HashMap<String, Object>();
+        Map<String, Object> doc = new HashMap<>();
         doc.put(Properties.idField.get(), StringUtils.createIdUsingTestName(id, testName));
         
         for(String requiredField:Properties.requiredNumericFields.get())
@@ -100,9 +103,10 @@ public abstract class BaseIndexer {
             for (String language: languages){
             	for(String fieldName: Properties.titleFields.get()) {
 					doc.put(fieldName + "_" + language, addValue(doc, language, fieldName, local));
-					//TODO: bug?
-					if (Properties.languagesRequiringTransliterationFromEnglish.get().contains(language) && fieldName.equals(Properties.transliterationFieldName.get()))
-						doc.put(fieldName + "_" + language, english);
+                    //TODO: bug?
+                    if (Properties.languagesRequiringTransliterationFromEnglish.get().contains(language) && fieldName.equals(Properties.transliterationFieldName.get())) {
+                        doc.put(fieldName + "_" + language, english);
+                    }
 				}
             }
         }
@@ -112,10 +116,11 @@ public abstract class BaseIndexer {
         }
 		if (altTitle != null && altTitle.length() > 0) {
 			for (String language : languages) {
-				if (Properties.languagesRequiringAdditionalField.get().contains(language))
-					for (String fieldName : Properties.titleAkaFields.get()) {
-						doc.put(fieldName + "_" + language, addValue(doc, language, fieldName, altTitle));
-					}
+                if (Properties.languagesRequiringAdditionalField.get().contains(language)) {
+                    for (String fieldName : Properties.titleAkaFields.get()) {
+                        doc.put(fieldName + "_" + language, addValue(doc, language, fieldName, altTitle));
+                    }
+                }
 			}
 		}
 
@@ -128,7 +133,9 @@ public abstract class BaseIndexer {
 	{
 		@SuppressWarnings("unchecked")
 		Set<String> existingValues = (Set<String>)doc.get(fieldName + "_" + language);
-		if(existingValues==null) existingValues = Sets.newHashSet();
+        if (existingValues == null) {
+            existingValues = Sets.newHashSet();
+        }
 		existingValues.add(title);
 		return existingValues;
 	}

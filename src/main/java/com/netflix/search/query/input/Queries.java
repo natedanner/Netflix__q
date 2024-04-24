@@ -24,9 +24,9 @@ import com.netflix.search.query.report.google.GoogleDataExtractor;
 
 public class Queries {
     private Map<String, Set<String>> queryToIdMap = Maps.newHashMap();
-    private String datasetId;
-    private String queryCategory;
-    private Map<String, Map<Integer, TitleWithQueries>> titlesWithQueriesPerDataset;
+    private final String datasetId;
+    private final String queryCategory;
+    private final Map<String, Map<Integer, TitleWithQueries>> titlesWithQueriesPerDataset;
 
     public Queries(String datasetId, String queryCategory, Map<String, Map<Integer, TitleWithQueries>> titlesWithQueriesPerDataset) {
         this.queryToIdMap = Maps.newHashMap();
@@ -38,14 +38,16 @@ public class Queries {
     public void populateFromGoogleSpreadsheets()
     {
         Map<Integer, TitleWithQueries> titlesWithQueries = titlesWithQueriesPerDataset.get(datasetId);
-        if (titlesWithQueries != null)
+        if (titlesWithQueries != null) {
             for (Integer row : titlesWithQueries.keySet()) {
                 TitleWithQueries titleWithQueries = titlesWithQueries.get(row);
                 Set<String> queriesForThisCategory = titleWithQueries.getQueriesByCategory().get(queryCategory);
-                if (queriesForThisCategory != null)
+                if (queriesForThisCategory != null) {
                     for (String q : queriesForThisCategory)
                         put(q, titleWithQueries.getId());
+                }
             }
+        }
     }
 
     public Map<String, Set<String>> getQueryToIdMap()
@@ -57,8 +59,9 @@ public class Queries {
     {
         if (query != null && !query.isEmpty()) {
             Set<String> ids = queryToIdMap.get(query);
-            if (ids == null)
+            if (ids == null) {
                 ids = Sets.newHashSet();
+            }
             ids.add(id);
             queryToIdMap.put(query, ids);
         }

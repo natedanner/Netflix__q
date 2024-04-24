@@ -63,12 +63,15 @@ public class SummaryReport extends Report {
     {
         ReportItem returnValue = new SummaryReportItem();
         if (previousItem == null) {
-            if (currentItem != null)
+            if (currentItem != null) {
                 returnValue = new SummaryReportItem(new LinkedHashMap<String, String>(currentItem.getNamedValues()));
+            }
         } else {
             for (String name : previousItem.getNamedValues().keySet()) {
                 String previousValue = previousItem.getNamedValues().get(name);
-                if (name.equals(SummaryReportHeader.comments.toString())) continue;
+                if (name.equals(SummaryReportHeader.comments.toString())) {
+                    continue;
+                }
                 if (name.equals(SummaryReportHeader.name.toString())) {
                     returnValue.getNamedValues().put(SummaryReportHeader.name.toString(), previousValue);
                 } else {
@@ -82,7 +85,7 @@ public class SummaryReport extends Report {
                             Double previousNumeric = Double.valueOf(previousValue);
                             Double currentNumeric = Double.valueOf(currentValue);
                             Double difference = currentNumeric - previousNumeric;
-                            returnValue.setValue(name, (String.format("%.2f", (difference)) + PERCENT_SIGN));
+                            returnValue.setValue(name, (String.format("%.2f", difference) + PERCENT_SIGN));
                         } else {
                             Integer previousNumeric = Integer.valueOf(previousValue);
                             Integer currentNumeric = Integer.valueOf(currentValue);
@@ -99,18 +102,21 @@ public class SummaryReport extends Report {
     
     public void updateStatistic(Set<String> relevantDocuments, Set<String> results, List<Double> precisionList, List<Double> recallList, List<Double> fMeasureList)
     {
-        Double precision = 0d;
-        Double recall = 0d;
-        Double fMeasure = 0d;
+        Double precision = 0D;
+        Double recall = 0D;
+        Double fMeasure = 0D;
 
 		if (results != null && relevantDocuments != null) {
 			Set<String> relevantRetrievedResults = Sets.intersection(results, relevantDocuments);
-			if (results.size() != 0)
-				precision = (double) relevantRetrievedResults.size() / (double) results.size();
-			if (relevantDocuments.size() != 0)
-				recall = (double) relevantRetrievedResults.size() / (double) relevantDocuments.size();
-			if (precision != 0 || recall != 0)
-				fMeasure = 2 * ((precision * recall) / (precision + recall));
+            if (!results.isEmpty()) {
+                precision = (double) relevantRetrievedResults.size() / (double) results.size();
+            }
+            if (!relevantDocuments.isEmpty()) {
+                recall = (double) relevantRetrievedResults.size() / (double) relevantDocuments.size();
+            }
+            if (precision != 0 || recall != 0) {
+                fMeasure = 2 * ((precision * recall) / (precision + recall));
+            }
 		}
 
 		precisionList.add(precision);
@@ -126,7 +132,7 @@ public class SummaryReport extends Report {
 
     private static double calculateAverage(List<Double> scores)
     {
-        Double sum = 0d;
+        Double sum = 0D;
         if (!scores.isEmpty()) {
             for (Double mark : scores) {
                 sum += mark;
